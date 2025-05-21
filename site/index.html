@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Scraper Moldinsolv</title>
+  <style>
+    body { font-family: Arial; padding: 2em; max-width: 600px; margin: auto; }
+    input, button { padding: 0.5em; font-size: 1em; }
+    ul { margin-top: 1em; }
+    li { margin-bottom: 0.5em; }
+  </style>
+</head>
+<body>
+  <h1>Caută pe moldinsolv.md</h1>
+  <input type="text" id="search" placeholder="Introdu cuvântul cheie" />
+  <button onclick="cauta()">Caută</button>
+  <ul id="rezultate"></ul>
+
+  <h2>Programează o notificare</h2>
+  <label>Cuvânt cheie: <input type="text" id="agenda-keyword" /></label><br />
+  <label>Dată și oră: <input type="datetime-local" id="agenda-time" /></label><br />
+  <button onclick="salveazaAgenda()">Salvează</button>
+
+  <script>
+    async function cauta() {
+      const q = document.getElementById("search").value;
+      const ul = document.getElementById("rezultate");
+      ul.innerHTML = "";
+
+      if (!q) {
+        ul.innerHTML = "<li>Introdu un cuvânt cheie.</li>";
+        return;
+      }
+
+      const res = await fetch(`/cauta?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+
+      if (data.rezultate) {
+        data.rezultate.forEach(item => {
+          const li = document.createElement("li");
+          li.innerHTML = `<a href="${item.url}" target="_blank">${item.titlu}</a>`;
+          ul.appendChild(li);
+        });
+      } else {
+        ul.innerHTML = `<li>${data.mesaj || "Eroare la căutare."}</li>`;
+      }
+    }
+
+    function salveazaAgenda() {
+      const keyword = document.getElementById("agenda-keyword").value;
+      const time = new Date(document.getElementById("agenda-time").value);
+      localStorage.setItem("agenda", JSON.stringify({ keyword, time }));
+      alert("Notificarea a fost salvată!");
+    }
+
+    setInterval(async () => {
+      const saved = JSON.parse(localStorage.getItem("agenda"));
+      if (!saved) return;
+
+      const now = new Date();
+      const target = new Date(saved.time);
+      if (Math.abs(now - target) < 60000) {
+        const res = await fetch(`/cauta?q=${encodeURIComponent(saved.keyword)}`);
+        const data = await res.json();
+        alert("Rezultatele programate:\n" + (data.rezultate?.map(r => r.titlu).join("\n") || data.mesaj));
+        localStorage.removeItem("agenda");
+      }
+    }, 30000);
+  </script>
+</body>
+</html>
