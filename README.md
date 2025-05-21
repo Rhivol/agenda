@@ -1,45 +1,12 @@
-<!DOCTYPE html>
-<html lang="ro">
-<head>
-  <meta charset="UTF-8">
-  <title>Scraper Moldinsolv</title>
-  <style>
-    body { font-family: Arial; padding: 2em; max-width: 600px; margin: auto; }
-    input, button { padding: 0.5em; font-size: 1em; }
-    ul { margin-top: 1em; }
-    li { margin-bottom: 0.5em; }
-  </style>
-</head>
-<body>
-  <h1>Caută pe moldinsolv.md</h1>
-  <input type="text" id="search" placeholder="Introdu cuvântul cheie" />
-  <button onclick="cauta()">Caută</button>
-  <ul id="rezultate"></ul>
+Acest proiect este un microserviciu Python (Flask) care face scraping pe site-ul [moldinsolv.md](https://moldinsolv.md) pentru a găsi rapid articole sau anunțuri relevante legate de proceduri judiciare, lichidări și faliment.
 
-  <script>
-    async function cauta() {
-      const q = document.getElementById("search").value;
-      const ul = document.getElementById("rezultate");
-      ul.innerHTML = "";
+## 🔍 Ce face
 
-      if (!q) {
-        ul.innerHTML = "<li>Introdu un cuvânt cheie.</li>";
-        return;
-      }
+- Primește un cuvânt cheie de la utilizator (ex: `faliment`)
+- Caută articole relevante pe moldinsolv.md
+- Returnează primele 5 rezultate în format JSON
 
-      const res = await fetch(`https://<nume-aplicatie>.onrender.com/cauta?q=${encodeURIComponent(q)}`);
-      const data = await res.json();
+## 🚀 Exemplu de utilizare
 
-      if (data.rezultate) {
-        data.rezultate.forEach(item => {
-          const li = document.createElement("li");
-          li.innerHTML = `<a href="${item.url}" target="_blank">${item.titlu}</a>`;
-          ul.appendChild(li);
-        });
-      } else {
-        ul.innerHTML = `<li>${data.mesaj || "Eroare la căutare."}</li>`;
-      }
-    }
-  </script>
-</body>
-</html>
+```http
+GET https://moldinsolv-scraper.onrender.com/cauta?q=lichidare
